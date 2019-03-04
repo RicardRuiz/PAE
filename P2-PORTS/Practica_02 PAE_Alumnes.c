@@ -20,6 +20,7 @@ uint8_t estado_anterior = 8;
 int index = 0; // index para bucles
 uint8_t velocidad = 1; // Velocidad para el movimiento de los leds
 uint8_t direccion = 0; // Dirección de los leds (0 quietos)(1 izquierda)(2 derecha)
+uint8_t change = 0; // Variable para controlar cuando el led llega al limite
 uint32_t retraso = 500000;
 
 #define Pulsador_S1 1
@@ -198,7 +199,7 @@ void config_P7_LEDS (void)
     P7DIR |= 0xFF;
 
     // Iniciamos todos los pines apagados.
-    P7OUT &= 0x00;
+    P7OUT &= 0x01;
 
 }
 
@@ -315,38 +316,33 @@ void main(void) {
              delay_t(retraso);  // periodo del parpadeo
         }
 
-        /* Comentar el if de control y descometnar esto junto con el for
-        # Encendemos el bit del lado segun el lado en el que nos vemos
-        if(direccion == 1){ 
-            P7OUT = 0x08;
-        } else if (direccion == 2) {
-            P7OUT = 0x01;
+        // Si la dirección es 0, significa que no tienen dirección de movimiento
+        // por lo tanto no hace falta hacer el delay para ver los leds moverse
+        // Comprobamos también la velocidad por si acaso es 0
+        if ((direccion != 0) && (velocidad != 0)){
+            delay_t(retraso / velocidad);
         }
-        */
-        // for(index = 0; index < 8; index++){ 
 
-            // Si la dirección es 0, significa que no tienen dirección de movimiento
-            // por lo tanto no hace falta hacer el delay para ver los leds moverse
-            // Comprobamos también la velocidad por si acaso es 0
-            if ((direccion != 0) && (velocidad != 0)){
-                delay_t(retraso / velocidad);
-            }
+        // Movemos los leds en la dirección correspondiente
+        if(direccion == 1){ 
+            P7OUT >>= 1; // Desplazamos el bit hacia la derecha
+        } else if (direccion == 2) {
+            P7OUT <<= 1; // Desplazamos el bit hacia la izquierda
+        }
 
-            // Movemos los leds en la dirección correspondiente
-            if(direccion == 1){ 
-                P7OUT >>= 1; // Desplazamos el bit hacia la derecha
-            } else if (direccion == 2) {
-                P7OUT <<= 1; // Desplazamos el bit hacia la izquierda
-            }
+        // Comprobamos si tenemos que cambiar el led de un extremo a otro
+        if(change == 1){
+            P7OUT = 0x01;
+            change = 0;
+        }
 
-            // Comprobamos que no nos hayamos pasado con la posición del bit en P7OUT
-            if (P7OUT == 0x00){
-                P7OUT = 0x08;
-            } else if (P7OUT > 0x08){
-                P7OUT = 0x01;
-            }
+        // Comprobamos que no nos hayamos pasado con la posición del bit en P7OUT
+        if (P7OUT == 0x00){
+            P7OUT = 0x80;
+        } else if (P7OUT == 0x80){
+            change = 1;
+        }
 
-        // }
 
     } while(1); //Condicion para que el bucle sea infinito
 }
