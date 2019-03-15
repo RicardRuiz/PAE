@@ -1,8 +1,9 @@
 LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
 LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
 LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=linux
-configDescList=org.eclipse.launchbar.core.descriptorType.default\:EXERCICI PROPOSAT,org.eclipse.launchbar.core.descriptorType.default\:P2-PORTS
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:P2-PORTS
 eclipse.preferences.version=1
 org.eclipse.launchbar.core.descriptorType.default\:EXERCICI\ PROPOSAT/activeLaunchMode=run
 org.eclipse.launchbar.core.descriptorType.default\:EXERCICI\ PROPOSAT/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
 org.eclipse.launchbar.core.descriptorType.default\:P2-PORTS/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:P2-PORTS/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
