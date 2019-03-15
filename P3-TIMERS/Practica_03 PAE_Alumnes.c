@@ -15,12 +15,20 @@ uint8_t linea = 0;
 uint8_t estado=0;
 uint8_t estado_anterior = 8;
 int index = 0; // index para bucles
-uint8_t direccion = 0; // Dirección de los leds (0 quietos)(1 izquierda)(2 derecha)
+uint8_t direccion = 0; // Direcciï¿½n de los leds (0 quietos)(1 izquierda)(2 derecha)
 uint8_t change = 0; // Variable para controlar cuando el led llega al limite
 uint32_t retraso = 500000;
 
 uint16_t max_led_speed = 9500;
 uint16_t min_led_speed = 500;
+
+uint8_t horas = 0;
+uint8_t minutos = 0;
+uint8_t segundos = 0;
+
+uint8_t alarma_horas = 0;
+uint8_t alarma_minutos = 0;
+uint8_t alarma_segundos = 0;
 
 #define Pulsador_S1 1
 #define Pulsador_S2 2
@@ -31,7 +39,7 @@ uint16_t min_led_speed = 500;
 #define Jstick_Center 7
 
 /**************************************************************************
- * INICIALIZACIÓN DEL CONTROLADOR DE INTERRUPCIONES (NVIC).
+ * INICIALIZACIï¿½N DEL CONTROLADOR DE INTERRUPCIONES (NVIC).
  *
  * Sin datos de entrada
  *
@@ -58,17 +66,18 @@ void init_interrupciones(){
     NVIC->ICPR[1] |= BIT7; //Primero, me aseguro de que no quede ninguna interrupcion residual pendiente para este puerto,
     NVIC->ISER[1] |= BIT7; //y habilito las interrupciones del puerto
 
+    // TODO: COMENTAR
     NVIC->ICPR[0] |= BIT8;
     NVIC->ISER[0] |= BIT8;
 
-    NVIC->ICPR[0] |= BIT9;
-    NVIC->ISER[0] |= BIT9;
+    NVIC->ICPR[0] |= BITA;
+    NVIC->ISER[0] |= BITA;
 
     __enable_interrupt(); //Habilitamos las interrupciones a nivel global del micro.
 }
 
 /**************************************************************************
- * INICIALIZACIÓN DE LA PANTALLA LCD.
+ * INICIALIZACIï¿½N DE LA PANTALLA LCD.
  *
  * Sin datos de entrada
  *
@@ -110,7 +119,7 @@ void escribir(char String[], uint8_t Linea)
 }
 
 /**************************************************************************
- * INICIALIZACIÓN DE LOS BOTONES & LEDS DEL BOOSTERPACK MK II.
+ * INICIALIZACIï¿½N DE LOS BOTONES & LEDS DEL BOOSTERPACK MK II.
  *
  * Sin datos de entrada
  *
@@ -175,18 +184,18 @@ void init_botons(void)
  **************************************************************************/
 void delay_t (uint32_t temps)
 {
-   /*volatile uint32_t i = 0;
+   volatile uint32_t i = 0;
 
     do {
         // Incrementamos una variable temporal
         i++;
         // Comprobamos que la variable temporal sea menor o igual al retraso de entrada
-    } while(i <= temps);*/
+    } while(i <= temps);
 
 }
 
 /*****************************************************************************
- * CONFIGURACIÓN DEL PUERTO 7. A REALIZAR POR EL ALUMNO
+ * CONFIGURACIï¿½N DEL PUERTO 7. A REALIZAR POR EL ALUMNO
  *
  * Sin datos de entrada
  *
@@ -196,11 +205,11 @@ void delay_t (uint32_t temps)
 void config_P7_LEDS (void)
 {
 
-    // Establecemos el P7 cómo I/O digital.
+    // Establecemos el P7 cï¿½mo I/O digital.
     P7SEL0 &= 0x00;
     P7SEL1 &= 0x00;
 
-    // Establecemos todos los pines del P7 cómo pines de salida.
+    // Establecemos todos los pines del P7 cï¿½mo pines de salida.
     P7DIR |= 0xFF;
 
     // Iniciamos todos los pines apagados.
@@ -208,7 +217,7 @@ void config_P7_LEDS (void)
 
 }
 
-// TO DO
+// TODO: COMENTAR
 void init_TA0(void){
 
     // Activamos las interrupciones del tiemr
@@ -219,8 +228,22 @@ void init_TA0(void){
     TA0CCR0 = 33;
 
     // Establecemos la frequencia a 2^15Hz
-    TA0CTL = TASSEL__ACLK + MC__UP;
+    TA0CTL = TASSEL__ACLK + ID__1 + MC__UP;
 
+}
+
+// TODO: COMENTAR
+void init_TA1 (void){
+    
+    //Definimos el valor del registro TA1CCTL0
+    TA1CCTL0 |= CCIE;
+    TA1CCTL0 &= ~CCIFG;
+
+    //Definimos el registro TA1CCR0 con el numero de pulsos (1 segundo)
+    TA1CCR0 = 32768;
+
+    //definimos el valor del registro TA1CTL
+    TA1CTL = TASSEL__ACLK + ID__1 + MC__UP;
 }
 
 /*****************************************************************************
@@ -248,7 +271,9 @@ void main(void) {
     init_interrupciones();  //Configurar y activar las interrupciones de los botones
     init_LCD();             // Inicializamos la pantalla
 
+    // TODO: COMENTAR
     init_TA0();
+    init_TA1();
 
     config_P7_LEDS();       // Iniciamos los leds de P7
 
@@ -258,20 +283,20 @@ void main(void) {
     //Bucle principal (infinito):
     do {
 
-        if (estado_anterior != estado) {            // Dependiendo del valor del estado se encenderá un LED u otro.
+        if (estado_anterior != estado) {            // Dependiendo del valor del estado se encenderï¿½ un LED u otro.
             sprintf(cadena,"Estado %02d", estado);  // Guardamos en cadena la siguiente frase: Estado "valor del estado",
                                                     //con formato decimal, 2 cifras, rellenando con 0 a la izquierda.
             escribir(cadena,linea); // Escribimos la cadena al LCD
-            estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no esté siempre escribiendo.
+            estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no estï¿½ siempre escribiendo.
             switch(estado){
             case Jstick_Left:
-                // Establecemos la dirección de los leds (izquierda)
+                // Establecemos la direcciï¿½n de los leds (izquierda)
                 direccion = 1;
                 // Encendemos los leds RGB (1/1/1)
                 on_off_RGB_LED(1, 1, 1);
                 break;
             case Jstick_Right:
-                // Establecemos la dirección de los leds (derecha)
+                // Establecemos la direcciï¿½n de los leds (derecha)
                 direccion = 2;
                 // Encendemos los leds RGB (0/1/1)
                 on_off_RGB_LED(0, 1, 1);
@@ -306,36 +331,34 @@ void main(void) {
                 // Apagamos los leds RGB (0/0/0)
                 on_off_RGB_LED(0, 0, 0);
                 break;
+            default: // Estado 0
+                P2OUT ^= 0x40;     // Conmutamos el estado del LED R (bit 6)
+                delay_t(retraso);  // periodo del parpadeo
+                P2OUT ^= 0x10;     // Conmutamos el estado del LED G (bit 4)
+                delay_t(retraso);  // periodo del parpadeo
+                P5OUT ^= 0x40;     // Conmutamos el estado del LED B (bit 6)
+                delay_t(retraso);  // periodo del parpadeo
+                break;
             }
 
-        }
-
-        if (estado == 0){
-             P2OUT ^= 0x40;     // Conmutamos el estado del LED R (bit 6)
-             delay_t(retraso);  // periodo del parpadeo
-             P2OUT ^= 0x10;     // Conmutamos el estado del LED G (bit 4)
-             delay_t(retraso);  // periodo del parpadeo
-             P5OUT ^= 0x40;     // Conmutamos el estado del LED B (bit 6)
-             delay_t(retraso);  // periodo del parpadeo
         }
 
         sprintf(cadena,"TIMER_QH %d          ", TA0CCR0);
         escribir(cadena,2); 
 
-
     } while(1); //Condicion para que el bucle sea infinito
 }
 
-
-void TA0_0_IRQHandler (void) //Cas del TA0. Aquest és el nom important
+// TODO: COMENTAR
+void TA0_0_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
 {
-    TA0CCTL0 &= ~CCIE; //Convé inhabilitar la interrupció al començament
-    /* El que volem fer a la rutina d’atenció d’Interrupció */
-    /* Aquí no hem de fer cap comprovació addicional ja que */
-    /* només pot haver una causa per generar la interrupció */
+    TA0CCTL0 &= ~CCIE; //Convï¿½ inhabilitar la interrupciï¿½ al comenï¿½ament
+    /* El que volem fer a la rutina dï¿½atenciï¿½ dï¿½Interrupciï¿½ */
+    /* Aquï¿½ no hem de fer cap comprovaciï¿½ addicional ja que */
+    /* nomï¿½s pot haver una causa per generar la interrupciï¿½ */
     /* que el timer corresponent ha arribat al valor de CCR0 programat */
 
-    // Movemos los leds en la dirección correspondiente
+    // Movemos los leds en la direcciï¿½n correspondiente
     if(direccion == 1){
         P7OUT >>= 1; // Desplazamos el bit hacia la derecha
     } else if (direccion == 2) {
@@ -348,18 +371,18 @@ void TA0_0_IRQHandler (void) //Cas del TA0. Aquest és el nom important
         change = 0;
     }
 
-    // Comprobamos que no nos hayamos pasado con la posición del bit en P7OUT
+    // Comprobamos que no nos hayamos pasado con la posiciï¿½n del bit en P7OUT
     if (P7OUT == 0x00){
         P7OUT = 0x80;
     } else if (P7OUT == 0x80){
         change = 1;
     }
 
-    TA0CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupció
-    TA0CCTL0 |= CCIE; //S’ha d’habilitar la interrupció abans de sortir
+    TA0CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupciï¿½
+    TA0CCTL0 |= CCIE; //Sï¿½ha dï¿½habilitar la interrupciï¿½ abans de sortir
 }
 
-void TA0_N_IRQHandler (void) //Cas del TA0. Aquest és el nom important
+void TA0_N_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
 {
     uint16_t flag = TA0IV;
     TA0CTL &= ~(TAIE);
@@ -388,7 +411,7 @@ void TA0_N_IRQHandler (void) //Cas del TA0. Aquest és el nom important
 
 /**************************************************************************
  * RUTINAS DE GESTION DE LOS BOTONES:
- * Mediante estas rutinas, se detectará qué botón se ha pulsado
+ * Mediante estas rutinas, se detectarï¿½ quï¿½ botï¿½n se ha pulsado
  *
  * Sin Datos de entrada
  *
@@ -415,7 +438,7 @@ void PORT3_IRQHandler(void){//interrupcion del pulsador S2
 }
 
 //ISR para las interrupciones del puerto 4:
-void PORT4_IRQHandler(void){  //interrupción de los botones. Actualiza el valor de la variable global estado.
+void PORT4_IRQHandler(void){  //interrupciï¿½n de los botones. Actualiza el valor de la variable global estado.
     uint8_t flag = P4IV; //guardamos el vector de interrupciones. De paso, al acceder a este vector, se limpia automaticamente.
     P4IE &= 0x5D;   //interrupciones Joystick en port 4 desactivadas
     estado_anterior=0;
@@ -437,7 +460,7 @@ void PORT4_IRQHandler(void){  //interrupción de los botones. Actualiza el valor 
 }
 
 //ISR para las interrupciones del puerto 5:
-void PORT5_IRQHandler(void){  //interrupción de los botones. Actualiza el valor de la variable global estado.
+void PORT5_IRQHandler(void){  //interrupciï¿½n de los botones. Actualiza el valor de la variable global estado.
     uint8_t flag = P5IV; //guardamos el vector de interrupciones. De paso, al acceder a este vector, se limpia automaticamente.
     P5IE &= 0xCD;   //interrupciones Joystick y S1 en port 5 desactivadas
     estado_anterior=0;
