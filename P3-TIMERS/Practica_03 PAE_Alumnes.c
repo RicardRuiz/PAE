@@ -22,8 +22,11 @@ uint32_t retraso = 500000;
 uint16_t max_led_speed = 9500;
 uint16_t min_led_speed = 500;
 
-uint8_t seleccion = 0;
-uint8_t modificar = 0;
+uint8_t seleccion = 0; // Seleccionador entre alamra y reloj // seleccion 0 = reloj, seleccion 1 = alarma
+uint8_t modificar = 0; // Activador para saber si hay que modificar o no
+uint8_t posicion = 0; // una vez se modifica algo, que posicion si horas minutos o segundos // 0 horas, 1 minutos 2 segundos
+
+uint8_t parpadeo = 0; // variable para alteranar si escribir o no, en modo parpadear
 
 uint8_t horas = 0;
 uint8_t minutos = 0;
@@ -311,6 +314,65 @@ void main(void) {
                 P5OUT ^= 0x40;
                 break;
             case Jstick_Up:
+                //TODO COMENTAR:
+                if (modificar != 0){
+                    if (seleccion != 0){
+                        seleccion--;
+                    } else {
+                        seleccion = 1;
+                    }
+                } else {
+                    switch (posicion)
+                    {
+                        case 0;
+                            if (seleccion == 0){
+                                if (horas < 100){
+                                    horas++;
+                                } else {
+                                    horas = 0;
+                                }
+                            } else {
+                                if (alarma_horas < 100){
+                                    alarma_horas++;
+                                } else {
+                                    alarma_horas = 0;
+                                }
+                            }
+                            break;
+                        case 1: 
+                            if (seleccion == 0){
+                                if (minutos < 100){
+                                    minutos++;
+                                } else {
+                                    minutos = 0;
+                                }
+                            } else {
+                                if (alarma_minutos < 100){
+                                    alarma_minutos++;
+                                } else {
+                                    alarma_minutos = 0;
+                                }
+                            }
+                            break;
+                        case 2:
+                            if (seleccion == 0){
+                                if (segundos < 100){
+                                    segundos++;
+                                } else {
+                                    segundos = 0;
+                                }
+                            } else {
+                                if (alarma_segundos < 100){
+                                    alarma_segundos++;
+                                } else {
+                                    alarma_segundos = 0;
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 // Aumentamos velocidad
                 if (TA0CCR0 > min_led_speed){
                     TA0CCR0 -= 1000;
@@ -319,6 +381,65 @@ void main(void) {
                 on_off_RGB_LED(1, 0, 1);
                 break;
             case Jstick_Down:
+                //TODO COMENTAR:
+                if (modificar != 0){
+                    if (seleccion != 0){
+                        seleccion--;
+                    } else {
+                        seleccion = 1;
+                    }
+                } else {
+                    switch (posicion)
+                    {
+                        case 0;
+                            if (seleccion == 0){
+                                if (horas < 100){
+                                    horas++;
+                                } else {
+                                    horas = 0;
+                                }
+                            } else {
+                                if (alarma_horas < 100){
+                                    alarma_horas++;
+                                } else {
+                                    alarma_horas = 0;
+                                }
+                            }
+                            break;
+                        case 1: 
+                            if (seleccion == 0){
+                                if (minutos < 100){
+                                    minutos++;
+                                } else {
+                                    minutos = 0;
+                                }
+                            } else {
+                                if (alarma_minutos < 100){
+                                    alarma_minutos++;
+                                } else {
+                                    alarma_minutos = 0;
+                                }
+                            }
+                            break;
+                        case 2:
+                            if (seleccion == 0){
+                                if (segundos < 100){
+                                    segundos++;
+                                } else {
+                                    segundos = 0;
+                                }
+                            } else {
+                                if (alarma_segundos < 100){
+                                    alarma_segundos++;
+                                } else {
+                                    alarma_segundos = 0;
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 // Disminuimos velocidad
                 if (TA0CCR0 < max_led_speed){
                     TA0CCR0 += 1000;
@@ -357,6 +478,9 @@ void main(void) {
 
         sprintf(cadena,"Reloj: %d:%d:%d  ", horas, minutos, segundos);
         escribir(cadena,5); 
+
+        sprintf(cadena,"ALARMAAA");
+        escribir(cadena,6); 
 
 
     } while(1); //Condicion para que el bucle sea infinito
