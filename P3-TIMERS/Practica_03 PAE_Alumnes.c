@@ -316,7 +316,7 @@ void main(void) {
             case Jstick_Up:
                 //TODO COMENTAR:
                 if (modificar != 0){
-                    if (seleccion != 0){
+                    if (seleccion > 0){
                         seleccion--;
                     } else {
                         seleccion = 1;
@@ -341,13 +341,13 @@ void main(void) {
                             break;
                         case 1: 
                             if (seleccion == 0){
-                                if (minutos < 100){
+                                if (minutos < 59){
                                     minutos++;
                                 } else {
                                     minutos = 0;
                                 }
                             } else {
-                                if (alarma_minutos < 100){
+                                if (alarma_minutos < 59){
                                     alarma_minutos++;
                                 } else {
                                     alarma_minutos = 0;
@@ -356,13 +356,13 @@ void main(void) {
                             break;
                         case 2:
                             if (seleccion == 0){
-                                if (segundos < 100){
+                                if (segundos < 59){
                                     segundos++;
                                 } else {
                                     segundos = 0;
                                 }
                             } else {
-                                if (alarma_segundos < 100){
+                                if (alarma_segundos < 59){
                                     alarma_segundos++;
                                 } else {
                                     alarma_segundos = 0;
@@ -383,56 +383,56 @@ void main(void) {
             case Jstick_Down:
                 //TODO COMENTAR:
                 if (modificar != 0){
-                    if (seleccion != 0){
-                        seleccion--;
+                    if (seleccion < 1){
+                        seleccion++;
                     } else {
-                        seleccion = 1;
+                        seleccion = 0;
                     }
                 } else {
                     switch (posicion)
                     {
                         case 0;
                             if (seleccion == 0){
-                                if (horas < 100){
-                                    horas++;
+                                if (horas > 0){
+                                    horas--;
                                 } else {
-                                    horas = 0;
+                                    horas = 99;
                                 }
                             } else {
-                                if (alarma_horas < 100){
-                                    alarma_horas++;
+                                if (alarma_horas > 0){
+                                    alarma_horas--;
                                 } else {
-                                    alarma_horas = 0;
+                                    alarma_horas = 99;
                                 }
                             }
                             break;
                         case 1: 
                             if (seleccion == 0){
-                                if (minutos < 100){
-                                    minutos++;
+                                if (minutos > 0){
+                                    minutos--;
                                 } else {
-                                    minutos = 0;
+                                    minutos = 59;
                                 }
                             } else {
-                                if (alarma_minutos < 100){
-                                    alarma_minutos++;
+                                if (alarma_minutos > 0){
+                                    alarma_minutos--;
                                 } else {
-                                    alarma_minutos = 0;
+                                    alarma_minutos = 59;
                                 }
                             }
                             break;
                         case 2:
                             if (seleccion == 0){
-                                if (segundos < 100){
-                                    segundos++;
+                                if (segundos > 0){
+                                    segundos--;
                                 } else {
-                                    segundos = 0;
+                                    segundos = 59;
                                 }
                             } else {
-                                if (alarma_segundos < 100){
-                                    alarma_segundos++;
+                                if (alarma_segundos > 0){
+                                    alarma_segundos--;
                                 } else {
-                                    alarma_segundos = 0;
+                                    alarma_segundos = 59;
                                 }
                             }
                             break;
