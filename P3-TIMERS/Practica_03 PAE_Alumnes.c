@@ -28,6 +28,8 @@ uint8_t posicion = 0; // una vez se modifica algo, que posicion si horas minutos
 
 uint8_t parpadeo = 0; // variable para alteranar si escribir o no, en modo parpadear
 
+uint8_t alarma = 0;
+
 uint8_t horas = 0;
 uint8_t minutos = 0;
 uint8_t segundos = 0;
@@ -296,12 +298,26 @@ void main(void) {
             estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no est� siempre escribiendo.
             switch(estado){
             case Jstick_Left:
+                if (modificar == 1){
+                    if (seleccion > 0){
+                        seleccion--;
+                    } else {
+                        seleccion = 2;
+                    }
+                }
                 // Establecemos la direcci�n de los leds (izquierda)
                 direccion = 1;
                 // Encendemos los leds RGB (1/1/1)
                 on_off_RGB_LED(1, 1, 1);
                 break;
             case Jstick_Right:
+                if (modificar == 1){
+                    if (seleccion < 2){
+                        seleccion++;
+                    } else {
+                        seleccion = 0;
+                    }
+                }
                 // Establecemos la direcci�n de los leds (derecha)
                 direccion = 2;
                 // Encendemos los leds RGB (0/1/1)
@@ -315,7 +331,7 @@ void main(void) {
                 break;
             case Jstick_Up:
                 //TODO COMENTAR:
-                if (modificar != 0){
+                if (modificar == 0){
                     if (seleccion > 0){
                         seleccion--;
                     } else {
@@ -326,13 +342,13 @@ void main(void) {
                     {
                         case 0;
                             if (seleccion == 0){
-                                if (horas < 100){
+                                if (horas < 23){
                                     horas++;
                                 } else {
                                     horas = 0;
                                 }
                             } else {
-                                if (alarma_horas < 100){
+                                if (alarma_horas < 23){
                                     alarma_horas++;
                                 } else {
                                     alarma_horas = 0;
@@ -396,13 +412,13 @@ void main(void) {
                                 if (horas > 0){
                                     horas--;
                                 } else {
-                                    horas = 99;
+                                    horas = 23;
                                 }
                             } else {
                                 if (alarma_horas > 0){
                                     alarma_horas--;
                                 } else {
-                                    alarma_horas = 99;
+                                    alarma_horas = 23;
                                 }
                             }
                             break;
@@ -448,10 +464,12 @@ void main(void) {
                 on_off_RGB_LED(1, 1, 0);
                 break;
             case Pulsador_S1:
+                modificar = 1;
                 // Encendemos los leds RGB (1/1/1)
                 on_off_RGB_LED(1, 1, 1);
                 break;
             case Pulsador_S2:
+                modificar = 0;
                 // Apagamos los leds RGB (0/0/0)
                 on_off_RGB_LED(0, 0, 0);
                 break;
@@ -469,17 +487,33 @@ void main(void) {
 
         // RENDER
 
+        // MOSTAR VELOCIDAD DE LEDS (REAL)
+
         sprintf(cadena,"TIMER_QH %d          ", TA0CCR0);
         escribir(cadena,2); 
 
         sprintf(cadena,"Alarma: %d:%d:%d  ", alarma_horas, alarma_minutos, alarma_segundos);
-        escribir(cadena,4); 
-
+        if (seleccion == 1){
+            if ((parpadeo == 0) && (modificar == 1)){
+                sprintf(cadena,"                ");                
+            }
+        }
+        escribir(cadena,4);
 
         sprintf(cadena,"Reloj: %d:%d:%d  ", horas, minutos, segundos);
+        if (seleccion == 0){
+            if ((parpadeo == 0) && (modificar == 1)){
+                sprintf(cadena,"                ");                
+            }
+        }
         escribir(cadena,5); 
 
-        sprintf(cadena,"ALARMAAA");
+        sprintf(cadena,"         ");
+        if (alarma == 1){
+            if (parpadeo == 1){
+                sprintf(cadena,"ALARMAAA");
+            }
+        }
         escribir(cadena,6); 
 
 
@@ -527,6 +561,35 @@ void TA1_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
     /* nom�s pot haver una causa per generar la interrupci� */
     /* que el timer corresponent ha arribat al valor de CCR0 programat */
 
+    if (parpadeo == 1){
+        parpadeo = 0;
+    } else {
+        parpadeo = 1;
+    }
+
+    segundos++;
+
+    if (segundos >= 60) {
+        minutos += (int)(segundos / 60);
+        segundos %= 60;
+    }
+    if (minutos >= 60) {
+        horas += (int)(minutos / 60);
+        minutos %= 60;
+    }
+    if (horas >= 24) {
+        horas %= 24;
+    }
+
+    if ((horas == alarma_horas) && (minutos == alarma_minutos) && (segundos == alarma_segundos)){
+        alarma = 1;
+    }
+
+    if (alarma == 1){
+        if ((horas == alarma_horas) && (minutos == alarma_minutos + 2)){
+            alarma = 0;
+        }
+    }
 
 
     TA1CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupci�
