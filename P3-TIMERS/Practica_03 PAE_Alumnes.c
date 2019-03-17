@@ -22,6 +22,9 @@ uint32_t retraso = 500000;
 uint16_t max_led_speed = 9500;
 uint16_t min_led_speed = 500;
 
+uint8_t seleccion = 0;
+uint8_t modificar = 0;
+
 uint8_t horas = 0;
 uint8_t minutos = 0;
 uint8_t segundos = 0;
@@ -343,8 +346,18 @@ void main(void) {
 
         }
 
+        // RENDER
+
         sprintf(cadena,"TIMER_QH %d          ", TA0CCR0);
         escribir(cadena,2); 
+
+        sprintf(cadena,"Alarma: %d:%d:%d  ", alarma_horas, alarma_minutos, alarma_segundos);
+        escribir(cadena,4); 
+
+
+        sprintf(cadena,"Reloj: %d:%d:%d  ", horas, minutos, segundos);
+        escribir(cadena,5); 
+
 
     } while(1); //Condicion para que el bucle sea infinito
 }
@@ -382,6 +395,20 @@ void TA0_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
     TA0CCTL0 |= CCIE; //S�ha d�habilitar la interrupci� abans de sortir
 }
 
+void TA1_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
+{
+    TA1CCTL0 &= ~CCIE; //Conv� inhabilitar la interrupci� al comen�ament
+    /* El que volem fer a la rutina d�atenci� d�Interrupci� */
+    /* Aqu� no hem de fer cap comprovaci� addicional ja que */
+    /* nom�s pot haver una causa per generar la interrupci� */
+    /* que el timer corresponent ha arribat al valor de CCR0 programat */
+
+
+
+    TA1CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupci�
+    TA1CCTL0 |= CCIE; //S�ha d�habilitar la interrupci� abans de sortir
+}
+
 void TA0_N_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
 {
     uint16_t flag = TA0IV;
@@ -407,7 +434,6 @@ void TA0_N_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
 
     TA0CTL |= TAIE;
 }
-
 
 /**************************************************************************
  * RUTINAS DE GESTION DE LOS BOTONES:
