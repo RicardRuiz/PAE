@@ -608,14 +608,17 @@ void TA1_0_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
     /* nomï¿½s pot haver una causa per generar la interrupciï¿½ */
     /* que el timer corresponent ha arribat al valor de CCR0 programat */
 
+    // Alternamos la variable de parpadeo
     if (parpadeo == 1){
         parpadeo = 0;
     } else {
         parpadeo = 1;
     }
 
+    // incrementamos los segundos
     segundos++;
 
+    // Comprobamos el tiempo para pasar de segundos a minutos, minutos a horas y reiniciamos horas
     if (segundos >= 60) {
         minutos += (int)(segundos / 60);
         segundos %= 60;
@@ -628,10 +631,12 @@ void TA1_0_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
         horas %= 24;
     }
 
+    // compramos si es la horad e la alarma y activamos el flag
     if ((horas == alarma_horas) && (minutos == alarma_minutos) && (segundos == alarma_segundos)){
         alarma = 1;
     }
 
+    // Si tenemos la alarma, esperamos 2m para desactivarla
     if (alarma == 1){
         if ((horas == alarma_horas) && (minutos == alarma_minutos + 2)){
             alarma = 0;
