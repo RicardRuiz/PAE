@@ -15,25 +15,27 @@ uint8_t linea = 0;
 uint8_t estado=0;
 uint8_t estado_anterior = 8;
 int index = 0; // index para bucles
-uint8_t direccion = 0; // Direcciï¿½n de los leds (0 quietos)(1 izquierda)(2 derecha)
+uint8_t direccion = 0; // Direccion de los leds (0 quietos)(1 izquierda)(2 derecha)
 uint8_t change = 0; // Variable para controlar cuando el led llega al limite
 uint32_t retraso = 500000;
 
-uint16_t max_led_speed = 9500;
-uint16_t min_led_speed = 500;
+uint16_t max_led_speed = 7500; // Velocidad más lenta del movimiento de leds
+uint16_t min_led_speed = 500; // Velocidad más rapida del movimiento de leds
 
-uint8_t seleccion = 0; // Seleccionador entre alamra y reloj // seleccion 0 = reloj, seleccion 1 = alarma
-uint8_t modificar = 0; // Activador para saber si hay que modificar o no
-uint8_t posicion = 0; // una vez se modifica algo, que posicion si horas minutos o segundos // 0 horas, 1 minutos 2 segundos
+uint8_t seleccion = 0; // Selecciona entre (1 alarma) o (0 reloj)
+uint8_t modificar = 0; // Flag para comprobar si estamos o no modificando algun valor del reloj o la alarma
+uint8_t posicion = 0; // Posicion para determinar que modificamos (0 horas) (1 minutos) (2 segundos)
 
-uint8_t parpadeo = 0; // variable para alteranar si escribir o no, en modo parpadear
+uint8_t parpadeo = 0; // Flag para comprobar y gestinar un sistema de parpadeo
 
-uint8_t alarma = 0;
+uint8_t alarma = 0; // Flag para comprobar si esta encendida o apagada la alarma
 
+// Variables del reloj
 uint8_t horas = 0;
 uint8_t minutos = 0;
 uint8_t segundos = 0;
 
+// Variables de la alarma
 uint8_t alarma_horas = 0;
 uint8_t alarma_minutos = 0;
 uint8_t alarma_segundos = 0;
@@ -73,13 +75,14 @@ void init_interrupciones(){
     //Int. port 5 = 39 corresponde al bit 7 del segundo registro ISERx:
     NVIC->ICPR[1] |= BIT7; //Primero, me aseguro de que no quede ninguna interrupcion residual pendiente para este puerto,
     NVIC->ISER[1] |= BIT7; //y habilito las interrupciones del puerto
+    
+    //Init del timer 0, BIT8 del primer registro ISER0
+    NVIC->ICPR[0] |= BIT8; // Limpiamos el resudio que pueda quedar
+    NVIC->ISER[0] |= BIT8; // Habilitamos las interrupciones del timer 0 en el NVIC
 
-    // TODO: COMENTAR
-    NVIC->ICPR[0] |= BIT8;
-    NVIC->ISER[0] |= BIT8;
-
-    NVIC->ICPR[0] |= BITA;//BIT9
-    NVIC->ISER[0] |= BITA;//BIT9
+    //Init del timer 0, BITA del primer registro ISER0
+    NVIC->ICPR[0] |= BITA; // Limpiamos el resudio que pueda quedar
+    NVIC->ISER[0] |= BITA; // Habilitamos las interrupciones del timer 1 en el NVIC
 
     __enable_interrupt(); //Habilitamos las interrupciones a nivel global del micro.
 }
@@ -225,7 +228,14 @@ void config_P7_LEDS (void)
 
 }
 
-// TODO: COMENTAR
+/*****************************************************************************
+ * Init del timer 0
+ *
+ * Sin datos de entrada
+ *
+ * Sin datos de salida
+ *
+ ****************************************************************************/
 void init_TA0(void){
 
     // Activamos las interrupciones del tiemr
@@ -237,11 +247,17 @@ void init_TA0(void){
 
     // Establecemos la frequencia a 2^15Hz
     TA0CTL = TASSEL__ACLK + ID__1 + MC__UP;
-    //TA0CTL = TASSEL__ACLK + MC__UP;
 
 }
 
-// TODO: COMENTAR
+/*****************************************************************************
+ * Init del timer 1
+ *
+ * Sin datos de entrada
+ *
+ * Sin datos de salida
+ *
+ ****************************************************************************/
 void init_TA1 (void){
 
     //Definimos el valor del registro TA1CCTL0
@@ -253,7 +269,6 @@ void init_TA1 (void){
 
     //definimos el valor del registro TA1CTL
     TA1CTL = TASSEL__ACLK + ID__1 + MC__UP;
-    //TA0CTL = TASSEL__ACLK + MC__UP;
 }
 
 /*****************************************************************************
@@ -264,7 +279,6 @@ void init_TA1 (void){
  * Sin datos de salida
  *
  ****************************************************************************/
-
 void on_off_RGB_LED(uint8_t red, uint8_t green, uint8_t blue){
     if (red == 1)    P2OUT |= 0x40; else P2OUT &= ~0x40;
     if (green == 1)  P2OUT |= 0x10; else P2OUT &= ~0x10;
@@ -281,9 +295,8 @@ void main(void) {
     init_interrupciones();  //Configurar y activar las interrupciones de los botones
     init_LCD();             // Inicializamos la pantalla
 
-    // TODO: COMENTAR
-    init_TA0();
-    init_TA1();
+    init_TA0(); // Iniciamos timer 0
+    init_TA1(); // Iniciamos timer 1
 
     config_P7_LEDS();       // Iniciamos los leds de P7
 
@@ -300,8 +313,8 @@ void main(void) {
             estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no estï¿½ siempre escribiendo.
             switch(estado){
             case Jstick_Left:
-                if (modificar == 1){
-                    if (posicion > 0){
+                if (modificar == 1){ // Si estamos modificando alguna de las horas del reloj/alarma
+                    if (posicion > 0) // Comprobamos que estemos entre el rango de 0-2 (horas, minutos, segundos), sino saltamos al otro lado
                         posicion--;
                     } else {
                         posicion = 2;
@@ -313,8 +326,8 @@ void main(void) {
                 on_off_RGB_LED(1, 1, 1);
                 break;
             case Jstick_Right:
-                if (modificar == 1){
-                    if (posicion < 2){
+                if (modificar == 1){ // Si estamos modificando alguna de las horas del reloj/alarma
+                    if (posicion < 2){ // Comprobamos que estemos entre el rango de 0-2 (horas, minutos, segundos), sino saltamos al otro lado
                         posicion++;
                     } else {
                         posicion = 0;
@@ -333,13 +346,15 @@ void main(void) {
                 break;
             case Jstick_Up:
                 //TODO COMENTAR:
-                if (modificar == 0){
-                    if (seleccion > 0){
+                if (modificar == 0){ // Si no estamos modificando alguna de las horas del reloj/alarma
+                    if (seleccion > 0){ // Comprobamos que estemos en el rango de 0-1 (reloj, alarma), sino saltamos al otro lado
                         seleccion--;
                     } else {
                         seleccion = 1;
                     }
                 } else {
+                    // Comprobamos la posición para modificar entre (horas, minutos, segundos) y comprobamos los limites.
+                    // Comprobamos también si estamos modificando alarma o reloj
                     switch (posicion)
                     {
                         case 0:
@@ -393,20 +408,22 @@ void main(void) {
                 }
                 // Aumentamos velocidad
                 if (TA0CCR0 > min_led_speed){
-                    TA0CCR0 -= 500;
+                    TA0CCR0 -= 250;
                 }
                 // Encendemos los leds RGB (1/0/1)
                 on_off_RGB_LED(1, 0, 1);
                 break;
             case Jstick_Down:
                 //TODO COMENTAR:
-                if (modificar == 0){
-                    if (seleccion < 1){
+                if (modificar == 0){ // Si no estamos modificando alguna de las horas del reloj/alarma
+                    if (seleccion < 1){ // Comprobamos que estemos en el rango de 0-1 (reloj, alarma), sino saltamos al otro lado
                         seleccion++;
                     } else {
                         seleccion = 0;
                     }
                 } else {
+                    // Comprobamos la posición para modificar entre (horas, minutos, segundos) y comprobamos los limites.
+                    // Comprobamos también si estamos modificando alarma o reloj
                     switch (posicion)
                     {
                         case 0:
@@ -460,7 +477,7 @@ void main(void) {
                 }
                 // Disminuimos velocidad
                 if (TA0CCR0 < max_led_speed){
-                    TA0CCR0 += 500;
+                    TA0CCR0 += 250;
                 }
                 // Encendemos los leds RGB (1/1/0)
                 on_off_RGB_LED(1, 1, 0);
@@ -488,17 +505,21 @@ void main(void) {
 
         }
 
-        // RENDER
+        // Render
 
+        // Velocidad de los leds
         sprintf(cadena,"V Led: %d   ", TA0CCR0);
         escribir(cadena,3);
 
+        // Reloj
         sprintf(cadena,"R: %02d:%02d:%02d", horas, minutos, segundos);
         escribir(cadena,5);
 
+        // Reloj de Alarma
         sprintf(cadena,"A: %02d:%02d:%02d", alarma_horas, alarma_minutos, alarma_segundos);
         escribir(cadena,6);
 
+        // Aviso de la alarma
         sprintf(cadena,"               ");
         if (alarma == 1){
             if (parpadeo == 1){
@@ -507,6 +528,7 @@ void main(void) {
         }
         escribir(cadena,7);
 
+        // Render 
         if(modificar == 1){
             escribir("Modificando... ",8);
             if(seleccion == 1){ // alarma
