@@ -15,7 +15,7 @@ uint8_t linea = 0;
 uint8_t estado=0;
 uint8_t estado_anterior = 8;
 int index = 0; // index para bucles
-uint8_t direccion = 0; // Direcci�n de los leds (0 quietos)(1 izquierda)(2 derecha)
+uint8_t direccion = 0; // Direcciï¿½n de los leds (0 quietos)(1 izquierda)(2 derecha)
 uint8_t change = 0; // Variable para controlar cuando el led llega al limite
 uint32_t retraso = 500000;
 
@@ -47,7 +47,7 @@ uint8_t alarma_segundos = 0;
 #define Jstick_Center 7
 
 /**************************************************************************
- * INICIALIZACI�N DEL CONTROLADOR DE INTERRUPCIONES (NVIC).
+ * INICIALIZACIï¿½N DEL CONTROLADOR DE INTERRUPCIONES (NVIC).
  *
  * Sin datos de entrada
  *
@@ -78,14 +78,14 @@ void init_interrupciones(){
     NVIC->ICPR[0] |= BIT8;
     NVIC->ISER[0] |= BIT8;
 
-    NVIC->ICPR[0] |= BITA;
-    NVIC->ISER[0] |= BITA;
+    NVIC->ICPR[0] |= BITA;//BIT9
+    NVIC->ISER[0] |= BITA;//BIT9
 
     __enable_interrupt(); //Habilitamos las interrupciones a nivel global del micro.
 }
 
 /**************************************************************************
- * INICIALIZACI�N DE LA PANTALLA LCD.
+ * INICIALIZACIï¿½N DE LA PANTALLA LCD.
  *
  * Sin datos de entrada
  *
@@ -127,7 +127,7 @@ void escribir(char String[], uint8_t Linea)
 }
 
 /**************************************************************************
- * INICIALIZACI�N DE LOS BOTONES & LEDS DEL BOOSTERPACK MK II.
+ * INICIALIZACIï¿½N DE LOS BOTONES & LEDS DEL BOOSTERPACK MK II.
  *
  * Sin datos de entrada
  *
@@ -203,7 +203,7 @@ void delay_t (uint32_t temps)
 }
 
 /*****************************************************************************
- * CONFIGURACI�N DEL PUERTO 7. A REALIZAR POR EL ALUMNO
+ * CONFIGURACIï¿½N DEL PUERTO 7. A REALIZAR POR EL ALUMNO
  *
  * Sin datos de entrada
  *
@@ -213,11 +213,11 @@ void delay_t (uint32_t temps)
 void config_P7_LEDS (void)
 {
 
-    // Establecemos el P7 c�mo I/O digital.
+    // Establecemos el P7 cï¿½mo I/O digital.
     P7SEL0 &= 0x00;
     P7SEL1 &= 0x00;
 
-    // Establecemos todos los pines del P7 c�mo pines de salida.
+    // Establecemos todos los pines del P7 cï¿½mo pines de salida.
     P7DIR |= 0xFF;
 
     // Iniciamos todos los pines apagados.
@@ -237,12 +237,13 @@ void init_TA0(void){
 
     // Establecemos la frequencia a 2^15Hz
     TA0CTL = TASSEL__ACLK + ID__1 + MC__UP;
+    //TA0CTL = TASSEL__ACLK + MC__UP;
 
 }
 
 // TODO: COMENTAR
 void init_TA1 (void){
-    
+
     //Definimos el valor del registro TA1CCTL0
     TA1CCTL0 |= CCIE;
     TA1CCTL0 &= ~CCIFG;
@@ -252,6 +253,7 @@ void init_TA1 (void){
 
     //definimos el valor del registro TA1CTL
     TA1CTL = TASSEL__ACLK + ID__1 + MC__UP;
+    //TA0CTL = TASSEL__ACLK + MC__UP;
 }
 
 /*****************************************************************************
@@ -291,34 +293,34 @@ void main(void) {
     //Bucle principal (infinito):
     do {
 
-        if (estado_anterior != estado) {            // Dependiendo del valor del estado se encender� un LED u otro.
+        if (estado_anterior != estado) {            // Dependiendo del valor del estado se encenderï¿½ un LED u otro.
             sprintf(cadena,"Estado %02d", estado);  // Guardamos en cadena la siguiente frase: Estado "valor del estado",
                                                     //con formato decimal, 2 cifras, rellenando con 0 a la izquierda.
             escribir(cadena,linea); // Escribimos la cadena al LCD
-            estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no est� siempre escribiendo.
+            estado_anterior = estado; // Actualizamos el valor de estado_anterior, para que no estï¿½ siempre escribiendo.
             switch(estado){
             case Jstick_Left:
                 if (modificar == 1){
-                    if (seleccion > 0){
-                        seleccion--;
+                    if (posicion > 0){
+                        posicion--;
                     } else {
-                        seleccion = 2;
+                        posicion = 2;
                     }
                 }
-                // Establecemos la direcci�n de los leds (izquierda)
+                // Establecemos la direcciï¿½n de los leds (izquierda)
                 direccion = 1;
                 // Encendemos los leds RGB (1/1/1)
                 on_off_RGB_LED(1, 1, 1);
                 break;
             case Jstick_Right:
                 if (modificar == 1){
-                    if (seleccion < 2){
-                        seleccion++;
+                    if (posicion < 2){
+                        posicion++;
                     } else {
-                        seleccion = 0;
+                        posicion = 0;
                     }
                 }
-                // Establecemos la direcci�n de los leds (derecha)
+                // Establecemos la direcciï¿½n de los leds (derecha)
                 direccion = 2;
                 // Encendemos los leds RGB (0/1/1)
                 on_off_RGB_LED(0, 1, 1);
@@ -340,7 +342,7 @@ void main(void) {
                 } else {
                     switch (posicion)
                     {
-                        case 0;
+                        case 0:
                             if (seleccion == 0){
                                 if (horas < 23){
                                     horas++;
@@ -355,7 +357,7 @@ void main(void) {
                                 }
                             }
                             break;
-                        case 1: 
+                        case 1:
                             if (seleccion == 0){
                                 if (minutos < 59){
                                     minutos++;
@@ -391,14 +393,14 @@ void main(void) {
                 }
                 // Aumentamos velocidad
                 if (TA0CCR0 > min_led_speed){
-                    TA0CCR0 -= 1000;
+                    TA0CCR0 -= 500;
                 }
                 // Encendemos los leds RGB (1/0/1)
                 on_off_RGB_LED(1, 0, 1);
                 break;
             case Jstick_Down:
                 //TODO COMENTAR:
-                if (modificar != 0){
+                if (modificar == 0){
                     if (seleccion < 1){
                         seleccion++;
                     } else {
@@ -407,7 +409,7 @@ void main(void) {
                 } else {
                     switch (posicion)
                     {
-                        case 0;
+                        case 0:
                             if (seleccion == 0){
                                 if (horas > 0){
                                     horas--;
@@ -422,7 +424,7 @@ void main(void) {
                                 }
                             }
                             break;
-                        case 1: 
+                        case 1:
                             if (seleccion == 0){
                                 if (minutos > 0){
                                     minutos--;
@@ -458,7 +460,7 @@ void main(void) {
                 }
                 // Disminuimos velocidad
                 if (TA0CCR0 < max_led_speed){
-                    TA0CCR0 += 1000;
+                    TA0CCR0 += 500;
                 }
                 // Encendemos los leds RGB (1/1/0)
                 on_off_RGB_LED(1, 1, 0);
@@ -474,12 +476,13 @@ void main(void) {
                 on_off_RGB_LED(0, 0, 0);
                 break;
             default: // Estado 0
-                P2OUT ^= 0x40;     // Conmutamos el estado del LED R (bit 6)
+              /*  P2OUT ^= 0x40;     // Conmutamos el estado del LED R (bit 6)
                 delay_t(retraso);  // periodo del parpadeo
                 P2OUT ^= 0x10;     // Conmutamos el estado del LED G (bit 4)
                 delay_t(retraso);  // periodo del parpadeo
                 P5OUT ^= 0x40;     // Conmutamos el estado del LED B (bit 6)
                 delay_t(retraso);  // periodo del parpadeo
+              */
                 break;
             }
 
@@ -487,49 +490,71 @@ void main(void) {
 
         // RENDER
 
-        // MOSTAR VELOCIDAD DE LEDS (REAL)
+        sprintf(cadena,"V Led: %d   ", TA0CCR0);
+        escribir(cadena,3);
 
-        sprintf(cadena,"TIMER_QH %d          ", TA0CCR0);
-        escribir(cadena,2); 
+        sprintf(cadena,"R: %02d:%02d:%02d", horas, minutos, segundos);
+        escribir(cadena,5);
 
-        sprintf(cadena,"Alarma: %d:%d:%d  ", alarma_horas, alarma_minutos, alarma_segundos);
-        if (seleccion == 1){
-            if ((parpadeo == 0) && (modificar == 1)){
-                sprintf(cadena,"                ");                
-            }
-        }
-        escribir(cadena,4);
+        sprintf(cadena,"A: %02d:%02d:%02d", alarma_horas, alarma_minutos, alarma_segundos);
+        escribir(cadena,6);
 
-        sprintf(cadena,"Reloj: %d:%d:%d  ", horas, minutos, segundos);
-        if (seleccion == 0){
-            if ((parpadeo == 0) && (modificar == 1)){
-                sprintf(cadena,"                ");                
-            }
-        }
-        escribir(cadena,5); 
-
-        sprintf(cadena,"         ");
+        sprintf(cadena,"               ");
         if (alarma == 1){
             if (parpadeo == 1){
                 sprintf(cadena,"ALARMAAA");
             }
         }
-        escribir(cadena,6); 
+        escribir(cadena,7);
+
+        if(modificar == 1){
+            escribir("Modificando... ",8);
+            if(seleccion == 1){ // alarma
+                sprintf(cadena,"A -> ");
+            } else { // reloj
+                sprintf(cadena,"R -> ");
+            }
+            switch (posicion)
+            {
+                case 0: //horas
+                    sprintf(cadena,"%sHoras     ",cadena);
+                    break;
+                case 1: //minutos
+                    sprintf(cadena,"%sMinutos   ",cadena);
+                    break;
+                case 2: //segundos
+                    sprintf(cadena,"%sSegundos  ",cadena);
+                    break;
+                default:
+                    break;
+            };
+            escribir(cadena,9);
+        } else {
+            sprintf(cadena,"S1 Modificar");
+            if(seleccion == 1){
+                sprintf(cadena,"%s A ",cadena);
+            } else {
+                sprintf(cadena,"%s R ",cadena);
+            }
+            escribir(cadena,8);
+            escribir("S2 Stop Modif. ",9);
+        }
+
 
 
     } while(1); //Condicion para que el bucle sea infinito
 }
 
 // TODO: COMENTAR
-void TA0_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
+void TA0_0_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
 {
-    TA0CCTL0 &= ~CCIE; //Conv� inhabilitar la interrupci� al comen�ament
-    /* El que volem fer a la rutina d�atenci� d�Interrupci� */
-    /* Aqu� no hem de fer cap comprovaci� addicional ja que */
-    /* nom�s pot haver una causa per generar la interrupci� */
+    TA0CCTL0 &= ~CCIE; //Convï¿½ inhabilitar la interrupciï¿½ al comenï¿½ament
+    /* El que volem fer a la rutina dï¿½atenciï¿½ dï¿½Interrupciï¿½ */
+    /* Aquï¿½ no hem de fer cap comprovaciï¿½ addicional ja que */
+    /* nomï¿½s pot haver una causa per generar la interrupciï¿½ */
     /* que el timer corresponent ha arribat al valor de CCR0 programat */
 
-    // Movemos los leds en la direcci�n correspondiente
+    // Movemos los leds en la direcciï¿½n correspondiente
     if(direccion == 1){
         P7OUT >>= 1; // Desplazamos el bit hacia la derecha
     } else if (direccion == 2) {
@@ -542,23 +567,23 @@ void TA0_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
         change = 0;
     }
 
-    // Comprobamos que no nos hayamos pasado con la posici�n del bit en P7OUT
+    // Comprobamos que no nos hayamos pasado con la posiciï¿½n del bit en P7OUT
     if (P7OUT == 0x00){
         P7OUT = 0x80;
     } else if (P7OUT == 0x80){
         change = 1;
     }
 
-    TA0CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupci�
-    TA0CCTL0 |= CCIE; //S�ha d�habilitar la interrupci� abans de sortir
+    TA0CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupciï¿½
+    TA0CCTL0 |= CCIE; //Sï¿½ha dï¿½habilitar la interrupciï¿½ abans de sortir
 }
 
-void TA1_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
+void TA1_0_IRQHandler (void) //Cas del TA0. Aquest ï¿½s el nom important
 {
-    TA1CCTL0 &= ~CCIE; //Conv� inhabilitar la interrupci� al comen�ament
-    /* El que volem fer a la rutina d�atenci� d�Interrupci� */
-    /* Aqu� no hem de fer cap comprovaci� addicional ja que */
-    /* nom�s pot haver una causa per generar la interrupci� */
+    TA1CCTL0 &= ~CCIE; //Convï¿½ inhabilitar la interrupciï¿½ al comenï¿½ament
+    /* El que volem fer a la rutina dï¿½atenciï¿½ dï¿½Interrupciï¿½ */
+    /* Aquï¿½ no hem de fer cap comprovaciï¿½ addicional ja que */
+    /* nomï¿½s pot haver una causa per generar la interrupciï¿½ */
     /* que el timer corresponent ha arribat al valor de CCR0 programat */
 
     if (parpadeo == 1){
@@ -592,39 +617,14 @@ void TA1_0_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
     }
 
 
-    TA1CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupci�
-    TA1CCTL0 |= CCIE; //S�ha d�habilitar la interrupci� abans de sortir
+    TA1CCTL0 &= ~CCIFG; //Hem de netejar el flag de la interrupciï¿½
+    TA1CCTL0 |= CCIE; //Sï¿½ha dï¿½habilitar la interrupciï¿½ abans de sortir
 }
 
-void TA0_N_IRQHandler (void) //Cas del TA0. Aquest �s el nom important
-{
-    uint16_t flag = TA0IV;
-    TA0CTL &= ~(TAIE);
-    switch (flag) {
-            case 0: // No interrupt
-        break;
-            case 2: // TA0CCR1
-        break;
-            case 4: // TA0CCR2
-        break;
-            case 6: // TA0CCR3
-        break;
-            case 8: // TA0CCR4
-        break;
-            case 10: // TA0CCR5
-        break;
-            case 12: // TA0CCR6
-        break;
-            case 14: // TA0IFG overflow handler
-        break;
-    }
-
-    TA0CTL |= TAIE;
-}
 
 /**************************************************************************
  * RUTINAS DE GESTION DE LOS BOTONES:
- * Mediante estas rutinas, se detectar� qu� bot�n se ha pulsado
+ * Mediante estas rutinas, se detectarï¿½ quï¿½ botï¿½n se ha pulsado
  *
  * Sin Datos de entrada
  *
@@ -651,7 +651,7 @@ void PORT3_IRQHandler(void){//interrupcion del pulsador S2
 }
 
 //ISR para las interrupciones del puerto 4:
-void PORT4_IRQHandler(void){  //interrupci�n de los botones. Actualiza el valor de la variable global estado.
+void PORT4_IRQHandler(void){  //interrupciï¿½n de los botones. Actualiza el valor de la variable global estado.
     uint8_t flag = P4IV; //guardamos el vector de interrupciones. De paso, al acceder a este vector, se limpia automaticamente.
     P4IE &= 0x5D;   //interrupciones Joystick en port 4 desactivadas
     estado_anterior=0;
@@ -673,7 +673,7 @@ void PORT4_IRQHandler(void){  //interrupci�n de los botones. Actualiza el valo
 }
 
 //ISR para las interrupciones del puerto 5:
-void PORT5_IRQHandler(void){  //interrupci�n de los botones. Actualiza el valor de la variable global estado.
+void PORT5_IRQHandler(void){  //interrupciï¿½n de los botones. Actualiza el valor de la variable global estado.
     uint8_t flag = P5IV; //guardamos el vector de interrupciones. De paso, al acceder a este vector, se limpia automaticamente.
     P5IE &= 0xCD;   //interrupciones Joystick y S1 en port 5 desactivadas
     estado_anterior=0;
