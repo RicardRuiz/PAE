@@ -314,7 +314,7 @@ void main(void) {
             switch(estado){
             case Jstick_Left:
                 if (modificar == 1){ // Si estamos modificando alguna de las horas del reloj/alarma
-                    if (posicion > 0) // Comprobamos que estemos entre el rango de 0-2 (horas, minutos, segundos), sino saltamos al otro lado
+                    if (posicion > 0) {// Comprobamos que estemos entre el rango de 0-2 (horas, minutos, segundos), sino saltamos al otro lado
                         posicion--;
                     } else {
                         posicion = 2;
