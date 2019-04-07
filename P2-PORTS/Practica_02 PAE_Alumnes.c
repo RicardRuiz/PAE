@@ -324,7 +324,7 @@ void main(void) {
         }
 
         // Movemos los leds en la dirección correspondiente
-        if(direccion == 1){ 
+        if(direccion == 1){
             P7OUT >>= 1; // Desplazamos el bit hacia la derecha
         } else if (direccion == 2) {
             P7OUT <<= 1; // Desplazamos el bit hacia la izquierda
